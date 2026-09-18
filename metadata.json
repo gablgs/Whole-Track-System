@@ -1,0 +1,6 @@
+{
+  "name": "Staff Schedule & Event Admin",
+  "description": "Integrated staff scheduling, GPS geofenced time-tracking, and multi-event admin management connected to Firebase.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

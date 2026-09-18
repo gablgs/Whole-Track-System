@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "event_config": {
+      ".read": true,
+      ".write": true
+    },
+    "confirmations": {
+      ".read": true,
+      ".write": true
+    },
+    "clockins": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
