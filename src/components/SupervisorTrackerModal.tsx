@@ -9,16 +9,17 @@ import {
   getConfirmationsForEvent,
   saveClockSessionsForWorker,
 } from '../services/firebase';
-import { X, RefreshCw, FileSpreadsheet, Lock, Clock, CheckCircle2, AlertTriangle, Edit3, Trash2 } from 'lucide-react';
+import { X, RefreshCw, FileSpreadsheet, Lock, Clock, CheckCircle2, AlertTriangle, Edit3, Trash2, LayoutDashboard } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAdminPanel?: () => void;
   eventId: string;
   scheduledRows: ScheduledShiftRow[];
 }
 
-export function SupervisorTrackerModal({ isOpen, onClose, eventId, scheduledRows }: Props) {
+export function SupervisorTrackerModal({ isOpen, onClose, onOpenAdminPanel, eventId, scheduledRows }: Props) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
@@ -240,6 +241,19 @@ export function SupervisorTrackerModal({ isOpen, onClose, eventId, scheduledRows
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenAdminPanel && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenAdminPanel();
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs font-semibold text-rose-300 border border-stone-700 flex items-center gap-1.5 transition-colors shadow-xs"
+                title="Open Event Admin Panel"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-rose-400" />
+                <span className="hidden sm:inline">Event Admin Panel</span>
+              </button>
+            )}
             <button
               onClick={loadData}
               disabled={isLoading}

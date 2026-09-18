@@ -32,9 +32,10 @@ interface Props {
   eventId: string;
   eventDetails: EventDetails;
   scheduledRows: ScheduledShiftRow[];
+  onOpenAdminPanel?: () => void;
 }
 
-export function StaffPortal({ eventId, eventDetails, scheduledRows }: Props) {
+export function StaffPortal({ eventId, eventDetails, scheduledRows, onOpenAdminPanel }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
@@ -658,6 +659,7 @@ export function StaffPortal({ eventId, eventDetails, scheduledRows }: Props) {
       <SupervisorTrackerModal
         isOpen={isSupervisorOpen}
         onClose={() => setIsSupervisorOpen(false)}
+        onOpenAdminPanel={onOpenAdminPanel}
         eventId={eventId}
         scheduledRows={scheduledRows}
       />

@@ -9,14 +9,36 @@ import {
 import { buildSeedWorkers, SEED_SCHEDULE_ROWS } from './data/seedSchedule';
 import { StaffPortal } from './components/StaffPortal';
 import { EventAdminPanel } from './components/EventAdminPanel';
-import { Smartphone, LayoutDashboard, Database, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
-  const [activeView, setActiveView] = useState<'staff' | 'admin'>('staff');
+  // Check if URL has ?admin=true or #admin on load
+  const isUrlAdminRequested = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('admin') === 'true' || window.location.hash === '#admin';
+  };
+
+  const [activeView, setActiveView] = useState<'staff' | 'admin'>(() =>
+    isUrlAdminRequested() ? 'admin' : 'staff'
+  );
   const [liveEventId, setLiveEventId] = useState<string>('rc-show-apr-15-2026');
   const [eventDetails, setEventDetails] = useState<EventDetails>(DEFAULT_EVENT_DETAILS);
   const [workers, setWorkers] = useState<Worker[]>(() => buildSeedWorkers());
   const [isLoading, setIsLoading] = useState(true);
+
+  // Listen for hash change in browser (e.g. user types #admin or #staff in URL)
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#admin') {
+        setActiveView('admin');
+      } else if (window.location.hash === '#staff' || !window.location.hash) {
+        setActiveView('staff');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Initialize live event data from Firebase
   useEffect(() => {
@@ -63,41 +85,34 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
-      {/* Top Application Mode Switcher Bar */}
-      <nav className="bg-stone-900 text-stone-300 border-b border-stone-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs sticky top-0 z-40 shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="font-bold text-white tracking-tight text-sm">Staff Hours System</span>
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono text-2xs">
-            <Database className="w-3 h-3" /> Firebase RTDB Connected
-          </span>
-          <span className="text-stone-400 font-mono text-2xs">Live: {liveEventId}</span>
-        </div>
+      {/* Admin Mode Top Navigation - ONLY displayed when actively inside the Admin Panel */}
+      {activeView === 'admin' && (
+        <nav className="bg-stone-950 text-stone-300 border-b border-stone-800 px-4 py-2 flex items-center justify-between gap-3 text-xs sticky top-0 z-40 shadow-md">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setActiveView('staff');
+                if (window.location.hash === '#admin') {
+                  window.location.hash = '';
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Staff Portal
+            </button>
+            <span className="font-bold text-white tracking-tight hidden sm:inline">Admin Mode</span>
+          </div>
 
-        {/* View mode toggle pills */}
-        <div className="flex items-center gap-1 bg-stone-950 p-1 rounded-xl border border-stone-800">
-          <button
-            onClick={() => setActiveView('staff')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-colors ${
-              activeView === 'staff'
-                ? 'bg-rose-700 text-white shadow-xs'
-                : 'text-stone-400 hover:text-white'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" /> Staff Mobile Portal
-          </button>
-
-          <button
-            onClick={() => setActiveView('admin')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-colors ${
-              activeView === 'admin'
-                ? 'bg-rose-700 text-white shadow-xs'
-                : 'text-stone-400 hover:text-white'
-            }`}
-          >
-            <LayoutDashboard className="w-3.5 h-3.5" /> Event Admin Panel
-          </button>
-        </div>
-      </nav>
+          <div className="flex items-center gap-2 font-mono text-2xs text-stone-400">
+            <span className="hidden md:inline-flex items-center gap-1 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> RTDB Connected
+            </span>
+            <span className="bg-stone-900 border border-stone-800 px-2 py-0.5 rounded text-rose-300">
+              Live ID: {liveEventId}
+            </span>
+          </div>
+        </nav>
+      )}
 
       {/* Main View Area */}
       <div className="flex-1">
@@ -113,6 +128,7 @@ export default function App() {
             eventId={liveEventId}
             eventDetails={eventDetails}
             scheduledRows={fallbackScheduledRows}
+            onOpenAdminPanel={() => setActiveView('admin')}
           />
         ) : (
           <EventAdminPanel
